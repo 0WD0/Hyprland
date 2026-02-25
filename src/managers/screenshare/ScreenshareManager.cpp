@@ -31,12 +31,6 @@ void CScreenshareManager::onOutputCommit(PHLMONITOR monitor) {
         if (frame->m_session->monitor() != monitor)
             return;
 
-        if (frame->m_session->m_type == SHARE_WINDOW) {
-            CBox geometry = {frame->m_session->m_window->m_realPosition->value(), frame->m_session->m_window->m_realSize->value()};
-            if (geometry.intersection({monitor->m_position, monitor->m_size}).empty())
-                return;
-        }
-
         frame->copy();
     });
 
