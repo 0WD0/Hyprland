@@ -11,9 +11,20 @@ CXDGActivationToken::CXDGActivationToken(SP<CXdgActivationTokenV1> resource_) : 
     m_resource->setDestroy([this](CXdgActivationTokenV1* r) { PROTO::activation->destroyToken(this); });
     m_resource->setOnDestroy([this](CXdgActivationTokenV1* r) { PROTO::activation->destroyToken(this); });
 
-    m_resource->setSetSerial([this](CXdgActivationTokenV1* r, uint32_t serial_, wl_resource* seat) { m_serial = serial_; });
+    m_resource->setSetSerial([this](CXdgActivationTokenV1* r, uint32_t serial_, wl_resource* seat) {
+        m_serial = serial_;
+        LOGM(Log::TRACE, "xdg-activation token serial set to {} (seat {:x})", m_serial, (uintptr_t)seat);
+    });
 
-    m_resource->setSetAppId([this](CXdgActivationTokenV1* r, const char* appid) { m_appID = appid; });
+    m_resource->setSetAppId([this](CXdgActivationTokenV1* r, const char* appid) {
+        m_appID = appid ? appid : "";
+        LOGM(Log::TRACE, "xdg-activation token app-id set to {}", m_appID);
+    });
+
+    m_resource->setSetSurface([this](CXdgActivationTokenV1* r, wl_resource* surface) {
+        m_surface = surface;
+        LOGM(Log::TRACE, "xdg-activation token surface set to {:x}", (uintptr_t)m_surface);
+    });
 
     m_resource->setCommit([this](CXdgActivationTokenV1* r) {
         // TODO: should we send a protocol error of already_used here
@@ -27,7 +38,7 @@ CXDGActivationToken::CXDGActivationToken(SP<CXdgActivationTokenV1> resource_) : 
         // send done with a new token
         m_token = g_pTokenManager->registerNewToken({}, std::chrono::months{12});
 
-        LOGM(Log::DEBUG, "assigned new xdg-activation token {}", m_token);
+        LOGM(Log::DEBUG, "assigned new xdg-activation token {} (serial {}, app-id {}, surface {:x})", m_token, m_serial, m_appID, (uintptr_t)m_surface);
 
         m_resource->sendDone(m_token.c_str());
 
@@ -67,6 +78,8 @@ void CXDGActivationProtocol::bindManager(wl_client* client, void* data, uint32_t
     RESOURCE->setDestroy([this](CXdgActivationV1* pMgr) { this->onManagerResourceDestroy(pMgr->resource()); });
     RESOURCE->setGetActivationToken([this](CXdgActivationV1* pMgr, uint32_t id) { this->onGetToken(pMgr, id); });
     RESOURCE->setActivate([this](CXdgActivationV1* pMgr, const char* token, wl_resource* surface) {
+        LOGM(Log::TRACE, "xdg-activation activate request for token {} on surface {:x}", token, (uintptr_t)surface);
+
         auto TOKEN = std::ranges::find_if(m_sentTokens, [token](const auto& t) { return t.token == token; });
 
         if UNLIKELY (TOKEN == m_sentTokens.end()) {
@@ -85,7 +98,8 @@ void CXDGActivationProtocol::bindManager(wl_client* client, void* data, uint32_t
             return;
         }
 
-        PWINDOW->activate();
+        LOGM(Log::DEBUG, "xdg-activation focusing {} via token {}", PWINDOW, token);
+        PWINDOW->activate(true);
     });
 }
 
