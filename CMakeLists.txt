@@ -535,6 +535,7 @@ protocolnew("unstable/text-input" "text-input-unstable-v3" false)
 protocolnew("unstable/pointer-constraints" "pointer-constraints-unstable-v1"
             false)
 protocolnew("staging/xdg-activation" "xdg-activation-v1" false)
+protocolnew("protocols" "gtk-shell" true)
 protocolnew("staging/ext-idle-notify" "ext-idle-notify-v1" false)
 protocolnew("staging/ext-session-lock" "ext-session-lock-v1" false)
 protocolnew("stable/tablet" "tablet-v2" false)

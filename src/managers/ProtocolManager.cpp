@@ -19,6 +19,7 @@
 #include "../protocols/PointerConstraints.hpp"
 #include "../protocols/OutputPower.hpp"
 #include "../protocols/XDGActivation.hpp"
+#include "../protocols/GTKShell.hpp"
 #include "../protocols/IdleNotify.hpp"
 #include "../protocols/LockNotify.hpp"
 #include "../protocols/SessionLock.hpp"
@@ -164,6 +165,7 @@ CProtocolManager::CProtocolManager() {
     PROTO::constraints         = makeUnique<CPointerConstraintsProtocol>(&zwp_pointer_constraints_v1_interface, 1, "PointerConstraints");
     PROTO::outputPower         = makeUnique<COutputPowerProtocol>(&zwlr_output_power_manager_v1_interface, 1, "OutputPower");
     PROTO::activation          = makeUnique<CXDGActivationProtocol>(&xdg_activation_v1_interface, 1, "XDGActivation");
+    PROTO::gtkShell            = makeUnique<CGTKShellProtocol>(&gtk_shell1_interface, 5, "GTKShell");
     PROTO::idle                = makeUnique<CIdleNotifyProtocol>(&ext_idle_notifier_v1_interface, 2, "IdleNotify");
     PROTO::lockNotify          = makeUnique<CLockNotifyProtocol>(&hyprland_lock_notifier_v1_interface, 1, "IdleNotify");
     PROTO::sessionLock         = makeUnique<CSessionLockProtocol>(&ext_session_lock_manager_v1_interface, 1, "SessionLock");
@@ -268,6 +270,7 @@ CProtocolManager::~CProtocolManager() {
     PROTO::constraints.reset();
     PROTO::outputPower.reset();
     PROTO::activation.reset();
+    PROTO::gtkShell.reset();
     PROTO::idle.reset();
     PROTO::lockNotify.reset();
     PROTO::sessionLock.reset();
@@ -344,6 +347,7 @@ bool CProtocolManager::isGlobalPrivileged(const wl_global* global) {
         PROTO::textInputV3->getGlobal(),
         PROTO::constraints->getGlobal(),
         PROTO::activation->getGlobal(),
+        PROTO::gtkShell->getGlobal(),
         PROTO::idle->getGlobal(),
         PROTO::serverDecorationKDE->getGlobal(),
         PROTO::tablet->getGlobal(),
